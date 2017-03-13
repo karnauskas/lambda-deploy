@@ -67,7 +67,7 @@ func ReadConfigFile(path string, env string) *Config {
 	}
 
 	var c Config
-	switch env {		// This could be prettier
+	switch env { // This could be prettier
 	case "dev":
 		c = e.Dev
 	case "qa":
@@ -76,17 +76,16 @@ func ReadConfigFile(path string, env string) *Config {
 		c = e.Production
 	}
 
-	c.Lambda_Directory = path	// The Lambda Directory is always the same
+	c.Lambda_Directory = path // The Lambda Directory is always the same
 	return &c
 }
-
 
 // BuildAwsSession accepts an environment configuration and returns an AWS Session pointer
 // To be able to create a session it is required that your machine has an appropriate AWS credentials file at
 // ~/.aws/credentials
 func BuildAwsSession(c *Config) *session.Session {
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String("us-west-2"),
+		Region: aws.String("us-west-2"),
 	})
 
 	if err != nil {
@@ -135,6 +134,7 @@ func PushLambda(sess *session.Session, c *Config, zip string) {
 	})
 
 	if err != nil {
+		os.Remove(zip)
 		log.Print(err)
 		log.Fatal("Invalid Lambda Input Config")
 	} else {
