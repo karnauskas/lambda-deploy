@@ -24,6 +24,7 @@ type Environments struct {
 type Config struct {
 	Lambda_Name      string
 	Lambda_Directory string
+	Region		 string
 }
 
 func main() {
@@ -76,6 +77,10 @@ func ReadConfigFile(path string, env string) *Config {
 		c = e.Production
 	}
 
+	if c.Region == "" {
+		c.Region = "us-west-2"
+	}
+
 	c.Lambda_Directory = path // The Lambda Directory is always the same
 	return &c
 }
@@ -85,7 +90,7 @@ func ReadConfigFile(path string, env string) *Config {
 // ~/.aws/credentials
 func BuildAwsSession(c *Config) *session.Session {
 	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String("us-west-2"),
+		Region: aws.String(c.Region),
 	})
 
 	if err != nil {
@@ -120,7 +125,10 @@ func ZipContents(c *Config) string {
 // PushLambda pushes a zip file to the provided lambda.
 // This cannot guarantee the contents of the lambda are correct, but will push it to the appropriate environment
 func PushLambda(sess *session.Session, c *Config, zip string) {
-	svc := lambda.New(sess)
+	svc := lambda.New(sess, &aws.Config{
+		Region: aws.String(c.Region),
+	})
+
 	contents, err := ioutil.ReadFile(zip)
 	if err != nil {
 		log.Print(err)
